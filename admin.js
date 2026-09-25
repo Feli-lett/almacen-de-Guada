@@ -1,1191 +1,480 @@
-// Format Currency
-const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
-};
-
-// Format Category Slug to Human Readable
-const formatCategoryName = (slug) => {
-    if (!slug) return "";
-    return slug
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-};
-
-// Predefined weight steps for variable products
-const WEIGHT_STEPS = [
-    { label: "250g", val: 250 },
-    { label: "500g", val: 500 },
-    { label: "750g", val: 750 },
-    { label: "1kg", val: 1000 },
-    { label: "1.5kg", val: 1500 },
-    { label: "2kg", val: 2000 }
-];
-
-// =====================================================================
-// CATÁLOGO COMPLETO — EL ALMACÉN DE GUADA
-// =====================================================================
-const DEFAULT_CATEGORIES = [
-    { key: "mixes",                name: "Mixes de la Casa" },
-    { key: "granolas",             name: "Granolas Nutrinola" },
-    { key: "frutos-secos",         name: "Frutos Secos" },
-    { key: "barritas",             name: "Barritas de Cereal" },
-    { key: "almohaditas-cereales", name: "Almohaditas & Cereales" },
-    { key: "harinas-granos",       name: "Arroz, Avena & Harinas" },
-    { key: "frutas-deshidratados", name: "Frutas & Deshidratados" },
-    { key: "semillas",             name: "Semillas & Cacao" },
-    { key: "legumbres",            name: "Legumbres" },
-    { key: "chocolates",           name: "Bañados en Chocolate & Chips" }
-];
-
-const DEFAULT_PRODUCTS = [
-    // ─── MIXES DE LA CASA (19 Productos) ──────────────────────────────
-    { id: 1001, name: "Mix de Semillas", category: "mixes", pricePerKg: 5720, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.49.jpeg", isFeatured: true, description: "Blend equilibrado de chía, sésamo, girasol y lino. Ideal para ensaladas, yogur o smoothies.", sinTacc: true },
-    { id: 1002, name: "Mix Energía", category: "mixes", pricePerKg: 13300, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.49 (1).jpeg", isFeatured: true, description: "Combinación perfecta de nueces, almendras, pasas rubias y morenas y maníes.", sinTacc: true },
-    { id: 1003, name: "Mix Energía con Banana", category: "mixes", pricePerKg: 14700, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.49 (2).jpeg", isFeatured: false, description: "Nueces, almendras, pasas rubias y morenas, maníes y chips de banana.", sinTacc: true },
-    { id: 1004, name: "Mix Desayuno", category: "mixes", pricePerKg: 10500, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.50.jpeg", isFeatured: true, description: "Granola, copos de maíz, fibra de salvado, chips de banana, ananá en cubos y pasas.", sinTacc: false },
-    { id: 1005, name: "Mix Granola Deportiva", category: "mixes", pricePerKg: 9800, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.51 (1).jpeg", isFeatured: false, description: "Avena tostada con miel crujiente, toque de nueces, almendras y maníes.", sinTacc: false },
-    { id: 1006, name: "Mix Nutrición", category: "mixes", pricePerKg: 12900, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.51 (2).jpeg", isFeatured: false, description: "Nueces, almendras, avena, semillas de girasol y zapallo, copos sin azúcar y pasas.", sinTacc: true },
-    { id: 1007, name: "Mix Tropical", category: "mixes", pricePerKg: 13616, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.52.jpeg", isFeatured: false, description: "Nueces, almendras, chips de banana, pasas rubias y morenas, ananá en cubos y maníes.", sinTacc: true },
-    { id: 1008, name: "Mix Explosión de Sabores", category: "mixes", pricePerKg: 14440, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.54 (3).jpeg", isFeatured: false, description: "Almendras, chips de banana, pasas, ananá, maní con chocolate y maní salado.", sinTacc: true },
-    { id: 1009, name: "Mix Running", category: "mixes", pricePerKg: 23000, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.52 (1).jpeg", isFeatured: false, description: "Nueces, almendras, chips de banana y maníes. Liviano y energizante.", sinTacc: true },
-    { id: 1010, name: "Mix Andino", category: "mixes", pricePerKg: 14760, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.53 (1).jpeg", isFeatured: false, description: "Almendras, pasas, garrapiñada de maní, maíz frito y semillas de zapallo.", sinTacc: true },
-    { id: 1011, name: "Mix Power", category: "mixes", pricePerKg: 24360, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.52 (3).jpeg", isFeatured: false, description: "Nueces, almendras, castañas de cajú, chips de banana y pasas morenas.", sinTacc: true },
-    { id: 1012, name: "Mix Premium", category: "mixes", pricePerKg: 38000, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.53.jpeg", isFeatured: true, description: "Nueces, almendras, castañas de cajú y avellanas. Lo mejor de los frutos secos.", sinTacc: true },
-    { id: 1013, name: "Mix Afrodisíaco", category: "mixes", pricePerKg: 32516, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.53 (3).jpeg", isFeatured: true, description: "Nueces, almendras, arándanos, higos negros, jengibre caramelizado y coco flakes.", sinTacc: true },
-    { id: 1014, name: "Mix Classic", category: "mixes", pricePerKg: 26000, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.54 (2).jpeg", isFeatured: false, description: "Nueces, almendras y maníes. Simple y delicioso.", sinTacc: true },
-    { id: 1015, name: "Mix Forte", category: "mixes", pricePerKg: 23600, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.51.jpeg", isFeatured: false, description: "Nueces, almendras, castañas de cajú, maníes y semillas de girasol.", sinTacc: true },
-    { id: 1016, name: "Mix Dúo", category: "mixes", pricePerKg: 34600, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.53.jpeg", isFeatured: false, description: "Excelente combinación de dos variedades seleccionadas de frutos secos.", sinTacc: true },
-    { id: 1017, name: "Mix Europeo", category: "mixes", pricePerKg: 19600, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.54.jpeg", isFeatured: false, description: "Nueces, almendras, castañas de cajú, chips de banana, pasas y maníes.", sinTacc: true },
-    { id: 1018, name: "Mix Patagónico", category: "mixes", pricePerKg: 30800, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.54 (1).jpeg", isFeatured: false, description: "Nueces, almendras, manzana en cubos y arándanos. Fresco y natural.", sinTacc: true },
-    { id: 1019, name: "Mix Break", category: "mixes", pricePerKg: 13200, mode: "weight", image: "img/WhatsApp Image 2026-07-27 at 18.53.53 (2).jpeg", isFeatured: false, description: "Nueces, almendras, chips de banana, arándanos y ananá en cubos.", sinTacc: true },
-
-    // ─── GRANOLAS NUTRINOLA (3 Productos) ──────────────────────────────
-    { id: 1101, name: "Granola Tradicional 'Nutrinola' 1 KG", category: "granolas", pricePerKg: 16300, mode: "kilo", image: "img/nutrinola_tradicional.png", isFeatured: true, description: "Granola artesanal Nutrinola. Mezcla de avena, miel, pasas de uva, maní, semillas y frutos secos. Sin sal ni conservantes.", sinTacc: false },
-    { id: 1102, name: "Granola Base 'Nutrinola' 1 KG", category: "granolas", pricePerKg: 12100, mode: "kilo", image: "img/nutrinola_base.png", isFeatured: true, description: "Granola artesanal Nutrinola Base. Mezcla de avena, azúcar mascabo, maní y semillas de girasol. Sin sal agregada.", sinTacc: false },
-    { id: 1103, name: "Granola Cocada 'Nutrinola' 1 KG", category: "granolas", pricePerKg: 14000, mode: "kilo", image: "img/nutrinola_cocada.png", isFeatured: true, description: "Granola artesanal Nutrinola Cocada. 100% vegana. Cereales, azúcar mascabo, maní, coco rallado, semillas de girasol y nueces.", sinTacc: false },
-
-    // ─── FRUTOS SECOS & MANI / MAIZ (13 Productos) ─────────────────────
-    { id: 2001, name: "Nueces Mariposas 1 KG", category: "frutos-secos", pricePerKg: 35000, mode: "weight", image: "img/nueces.jpg", isFeatured: true, description: "Nueces mariposa extra blancas de primera calidad.", sinTacc: true },
-    { id: 2002, name: "Nueces Mariposas 500g (Fraccionado)", category: "frutos-secos", pricePerKg: 38500, mode: "kilo", image: "img/nueces.jpg", isFeatured: false, description: "Nueces mariposa fraccionadas paquete de 500g ($19.250).", sinTacc: true },
-    { id: 2003, name: "Nueces en Cuartos 1 KG", category: "frutos-secos", pricePerKg: 33250, mode: "weight", image: "img/nueces.jpg", isFeatured: false, description: "Nueces peladas en cuartos de excelente calidad.", sinTacc: true },
-    { id: 2004, name: "Nueces en Cuartos 500g (Fraccionado)", category: "frutos-secos", pricePerKg: 36576, mode: "kilo", image: "img/nueces.jpg", isFeatured: false, description: "Nueces en cuartos fraccionadas paquete de 500g ($18.288).", sinTacc: true },
-    { id: 2005, name: "Almendras 1 KG", category: "frutos-secos", pricePerKg: 35000, mode: "weight", image: "img/almendras.jpg", isFeatured: true, description: "Almendras enteras de la mejor calidad.", sinTacc: true },
-    { id: 2006, name: "Almendras 500g (Fraccionado)", category: "frutos-secos", pricePerKg: 36750, mode: "kilo", image: "img/almendras.jpg", isFeatured: false, description: "Almendras enteras fraccionadas paquete de 500g ($18.375).", sinTacc: true },
-    { id: 2007, name: "Castañas de Cajú 1 KG", category: "frutos-secos", pricePerKg: 22000, mode: "weight", image: "img/caju.jpg", isFeatured: false, description: "Castañas de cajú tostadas naturales sin sal.", sinTacc: true },
-    { id: 2008, name: "Pistachos Pelados Naturales 500g", category: "frutos-secos", pricePerKg: 129800, mode: "kilo", image: "img/cereales.jpg", isFeatured: false, description: "Pistachos pelados naturales fraccionados 500g ($64.900).", sinTacc: true },
-    { id: 2009, name: "Pistachos Tostados y Salados 1 KG", category: "frutos-secos", pricePerKg: 118000, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Pistachos con cáscara tostados y salados de primera.", sinTacc: true },
-    { id: 2010, name: "Maní Cervecero (Pizza, Jamón, Queso, Original) 1 KG", category: "frutos-secos", pricePerKg: 12500, mode: "weight", image: "img/mani.jpg", isFeatured: false, description: "Maní saborizado especial para picadas. Variedades: Pizza, Jamón, Queso, Original.", sinTacc: false },
-    { id: 2011, name: "Maní con Cáscara 1 KG", category: "frutos-secos", pricePerKg: 7650, mode: "weight", image: "img/mani.jpg", isFeatured: false, description: "Maní tostado con cáscara natural.", sinTacc: true },
-    { id: 2012, name: "Maíz Frito (Orig, Barbacoa, Mostaza y Miel, Queso) 1 KG", category: "frutos-secos", pricePerKg: 16000, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Maíz crocante frito con diferentes sabores a elección.", sinTacc: false },
-    { id: 2013, name: "Azúcar Mascabo 1 KG (Fraccionado)", category: "frutos-secos", pricePerKg: 5300, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Azúcar mascabo pura sin refinar 1 KG.", sinTacc: true },
-
-    // ─── BARRITAS DE CEREAL (4 Productos) ──────────────────────────────
-    { id: 3001, name: "Barrita Cereal 'Mudra' Armonía (Caja x 14 Uni)", category: "barritas", pricePerKg: 23300, mode: "kilo", image: "img/Barra-De-Frutos-Secos-Armonia-Mudra-X-35g-1-1029059.webp", isFeatured: true, description: "Barritas de frutos secos Mudra variedad Armonía 35g. Caja cerrada por 14 unidades.", sinTacc: true },
-    { id: 3002, name: "Barrita Cereal 'Mudra' Bienestar (Caja x 14 Uni)", category: "barritas", pricePerKg: 23300, mode: "kilo", image: "img/Barra-De-Frutos-Secos-Bienestar-Mudra-X-35g-1-1029057.webp", isFeatured: true, description: "Barritas de frutos secos Mudra variedad Bienestar 35g. Caja cerrada por 14 unidades.", sinTacc: true },
-    { id: 3003, name: "Barrita Cereal 'Mudra' Energía (Caja x 14 Uni)", category: "barritas", pricePerKg: 23300, mode: "kilo", image: "img/Barra-De-Frutos-Secos-Armonia-Mudra-X-35g-1-1029059.webp", isFeatured: false, description: "Barritas de frutos secos Mudra variedad Energía 35g. Caja cerrada por 14 unidades.", sinTacc: true },
-    { id: 3004, name: "Barrita Quinoa y Chocolate 'Weak Up' (Caja x 18 Uni)", category: "barritas", pricePerKg: 22000, mode: "kilo", image: "img/846265-800-600.webp", isFeatured: true, description: "Barritas saludables Weak Up de quinoa con baño de chocolate. Caja cerrada por 18 unidades.", sinTacc: true },
-
-    // ─── ALMOHADITAS & CEREALES (7 Productos) ─────────────────────────
-    { id: 4001, name: "Almohaditas Rell. Frutilla/Maní/Avellana/Limón 1 KG", category: "almohaditas-cereales", pricePerKg: 12000, mode: "weight", image: "img/almohaditas.jpg", isFeatured: true, description: "Almohaditas de cereal crocante rellenas. Sabor Frutilla, Maní, Avellana o Limón.", sinTacc: false },
-    { id: 4002, name: "Almohaditas Rell. Avellana (Caja 2.5 KG)", category: "almohaditas-cereales", pricePerKg: 11200, mode: "weight", image: "img/almohaditas.jpg", isFeatured: false, description: "Caja cerrada de 2,5 KG de almohaditas rellenas de avellana ($28.000).", sinTacc: false },
-    { id: 4003, name: "Almohaditas de Arroz (Frutilla) 500g", category: "almohaditas-cereales", pricePerKg: 16800, mode: "kilo", image: "img/almohaditas.jpg", isFeatured: false, description: "Almohaditas de arroz con relleno sabor frutilla 500g ($8.400).", sinTacc: true },
-    { id: 4004, name: "Almohaditas Lasfor Dos Salvado 1.5 KG", category: "almohaditas-cereales", pricePerKg: 6733, mode: "weight", image: "img/almohaditas.jpg", isFeatured: false, description: "Almohaditas Lasfor integrales con dos salvados 1,5 KG ($10.100).", sinTacc: false },
-    { id: 4005, name: "Bolitas de Chocolate Lasfor 500g", category: "almohaditas-cereales", pricePerKg: 10600, mode: "kilo", image: "img/almohaditas.jpg", isFeatured: false, description: "Cereal en bolitas de chocolate de marca Lasfor 500g ($5.300).", sinTacc: false },
-    { id: 4006, name: "Copos Cereal Sin Azúcar 500g", category: "almohaditas-cereales", pricePerKg: 8700, mode: "kilo", image: "img/cereales.jpg", isFeatured: false, description: "Copos de maíz crujientes sin azúcar 500g ($4.350).", sinTacc: true },
-    { id: 4007, name: "Copos Cereal Con Azúcar 4 KG", category: "almohaditas-cereales", pricePerKg: 4775, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Bolsa familiar de 4 KG de copos de maíz azucarados ($19.100).", sinTacc: false },
-
-    // ─── ARROZ, AVENA & HARINAS (6 Productos) ──────────────────────────
-    { id: 5001, name: "Arroz Yamaní 1 KG", category: "harinas-granos", pricePerKg: 3400, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Arroz yamaní integral de grano corto de cocción perfecta.", sinTacc: true },
-    { id: 5002, name: "Avena Arrollada 1 KG", category: "harinas-granos", pricePerKg: 3240, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Avena arrollada tradicional de copo entero.", sinTacc: false },
-    { id: 5003, name: "Coco Rallado 1 KG", category: "harinas-granos", pricePerKg: 13950, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Coco rallado fino natural deshidratado.", sinTacc: true },
-    { id: 5004, name: "Harina de Coco 1 KG", category: "harinas-granos", pricePerKg: 12400, mode: "weight", image: "img/cereales.jpg", isFeatured: false, description: "Harina desgrasada de coco pura sin gluten.", sinTacc: true },
-    { id: 5005, name: "Harina de Almendras con Piel 1 KG", category: "harinas-granos", pricePerKg: 33000, mode: "weight", image: "img/almendras.jpg", isFeatured: false, description: "Harina de almendras molidas con piel pura 100%.", sinTacc: true },
-    { id: 5006, name: "Harina de Almendras con Piel 500g", category: "harinas-granos", pricePerKg: 33400, mode: "kilo", image: "img/almendras.jpg", isFeatured: false, description: "Harina de almendras con piel fraccionada 500g ($16.700).", sinTacc: true },
-
-    // ─── FRUTAS & DESHIDRATADOS (6 Productos) ──────────────────────────
-    { id: 6001, name: "Arándanos Rojos Deshidratados 1 KG", category: "frutas-deshidratados", pricePerKg: 22000, mode: "weight", image: "img/frutas_deshidratadas.jpg", isFeatured: true, description: "Cranberries arándanos rojos desecados de sabor agridulce.", sinTacc: true },
-    { id: 6002, name: "Chips de Banana 1 KG", category: "frutas-deshidratados", pricePerKg: 17500, mode: "weight", image: "img/frutas_deshidratadas.jpg", isFeatured: false, description: "Chips de banana crujientes endulzados.", sinTacc: true },
-    { id: 6003, name: "Frutas Nevadas 1 KG", category: "frutas-deshidratados", pricePerKg: 13000, mode: "weight", image: "img/frutas_deshidratadas.jpg", isFeatured: false, description: "Mix de frutas glaseadas desecadas surtidas.", sinTacc: true },
-    { id: 6004, name: "Maca Orgánica Peruana (Polvo)", category: "frutas-deshidratados", pricePerKg: 3000, mode: "weight", image: "img/frutas_deshidratadas.jpg", isFeatured: false, description: "Maca peruana orgánica energizante en polvo.", sinTacc: true },
-    { id: 6005, name: "Tomates Deshidratados 500g", category: "frutas-deshidratados", pricePerKg: 30600, mode: "kilo", image: "img/frutas_deshidratadas.jpg", isFeatured: false, description: "Tomates desecados al sol 500g ($15.300).", sinTacc: true },
-    { id: 6006, name: "Hongos de Pino 1 KG", category: "frutas-deshidratados", pricePerKg: 35100, mode: "weight", image: "img/frutas_deshidratadas.jpg", isFeatured: false, description: "Hongos secos de pino patagónico seleccionados.", sinTacc: true },
-
-    // ─── SEMILLAS & CACAO (6 Productos) ────────────────────────────────
-    { id: 7001, name: "Semillas de Chía 1 KG", category: "semillas", pricePerKg: 10900, mode: "weight", image: "img/legumbres.jpg", isFeatured: false, description: "Semillas de chía negra ricas en omega 3.", sinTacc: true },
-    { id: 7002, name: "Semillas de Sésamo Integral 1 KG", category: "semillas", pricePerKg: 6100, mode: "weight", image: "img/legumbres.jpg", isFeatured: false, description: "Semillas de sésamo integral con cáscara.", sinTacc: true },
-    { id: 7003, name: "Semillas de Zapallo 500g", category: "semillas", pricePerKg: 16200, mode: "kilo", image: "img/legumbres.jpg", isFeatured: false, description: "Pepitas de girasol y zapallo peladas 500g ($8.100).", sinTacc: true },
-    { id: 7004, name: "Semillas de Quinoa 500g", category: "semillas", pricePerKg: 13200, mode: "kilo", image: "img/cereales.jpg", isFeatured: false, description: "Quinoa en grano seleccionada 500g ($6.600).", sinTacc: true },
-    { id: 7005, name: "Cacao Amargo Puro (100%) 500g", category: "semillas", pricePerKg: 36300, mode: "kilo", image: "img/chocolates.jpg", isFeatured: false, description: "Cacao alcalino amargo 100% puro en polvo 500g ($18.150).", sinTacc: true },
-    { id: 7006, name: "Cacao Amargo Puro (100%) 250g", category: "semillas", pricePerKg: 39960, mode: "kilo", image: "img/chocolates.jpg", isFeatured: false, description: "Cacao amargo puro 100% 250g ($9.990).", sinTacc: true },
-
-    // ─── LEGUMBRES (3 Productos) ───────────────────────────────────────
-    { id: 8001, name: "Lentejas 1 KG", category: "legumbres", pricePerKg: 4650, mode: "weight", image: "img/lentejas.jpg", isFeatured: false, description: "Lentejas verdes seleccionadas.", sinTacc: true },
-    { id: 8002, name: "Garbanzos 1 KG", category: "legumbres", pricePerKg: 4800, mode: "weight", image: "img/garbanzos.jpg", isFeatured: false, description: "Garbanzos enteros medianos.", sinTacc: true },
-    { id: 8003, name: "Porotos Negros 1 KG", category: "legumbres", pricePerKg: 4500, mode: "weight", image: "img/legumbres.jpg", isFeatured: false, description: "Porotos negros secos.", sinTacc: true },
-
-    // ─── BAÑADOS EN CHOCOLATE & CHIPS (4 Productos) ───────────────────
-    { id: 9001, name: "Baño de Repostería (Leche) 500g", category: "chocolates", pricePerKg: 17040, mode: "kilo", image: "img/chocolates.jpg", isFeatured: false, description: "Chocolate para moldear y bañar sabor chocolate con leche 500g ($8.520).", sinTacc: false },
-    { id: 9002, name: "Baño de Repostería (Semiamargo) 500g", category: "chocolates", pricePerKg: 17040, mode: "kilo", image: "img/chocolates.jpg", isFeatured: false, description: "Chocolate semiamargo especial repostería 500g ($8.520).", sinTacc: false },
-    { id: 9003, name: "Baño de Repostería (Blanco) 500g", category: "chocolates", pricePerKg: 17040, mode: "kilo", image: "img/chocolates.jpg", isFeatured: false, description: "Chocolate blanco para cobertura y moldeo 500g ($8.520).", sinTacc: false },
-    { id: 9004, name: "Chips de Chocolate 500g", category: "chocolates", pricePerKg: 15600, mode: "kilo", image: "img/chocolates.jpg", isFeatured: false, description: "Gotas/chips de chocolate resistentes al horneado 500g ($7.800).", sinTacc: false }
-];
-
-const DEFAULT_ORDERS = [];
-const DEFAULT_FINANCES = [];
-
-// ─── Reset v5: limpia localStorage viejo y fuerza catálogo completo ──────
-if (!localStorage.getItem("cozy_virgin_reset_v5")) {
-    localStorage.removeItem("cozy_products");
-    localStorage.removeItem("cozy_categories");
-    localStorage.removeItem("cozy_orders");
-    localStorage.removeItem("cozy_finances");
-    localStorage.removeItem("cozy_cart");
-    localStorage.removeItem("cozy_virgin_reset");
-    localStorage.removeItem("cozy_virgin_reset_v2");
-    localStorage.removeItem("cozy_virgin_reset_v3");
-    localStorage.removeItem("cozy_virgin_reset_v4");
-    localStorage.setItem("cozy_virgin_reset_v5", "true");
-}
-
-// Load State from LocalStorage
-let products = JSON.parse(localStorage.getItem("cozy_products")) || [];
-let categories = JSON.parse(localStorage.getItem("cozy_categories")) || [];
-
-// AUTO-REPAIR: Si el localStorage tiene menos productos que el catálogo por defecto (39), fusionar/reponer los faltantes
-if (!products || products.length < DEFAULT_PRODUCTS.length) {
-    const existingIds = new Set((products || []).map(p => p.id));
-    DEFAULT_PRODUCTS.forEach(dp => {
-        if (!existingIds.has(dp.id)) {
-            products.push(dp);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consola de Administración — El Almacén de Guada</title>
+    <!-- Google Fonts: Playfair Display + Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: var(--bg-main);
+            color: var(--color-text-main);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
         }
-    });
-    localStorage.setItem("cozy_products", JSON.stringify(products));
-}
-
-if (!categories || categories.length < DEFAULT_CATEGORIES.length) {
-    const existingKeys = new Set((categories || []).map(c => c.key));
-    DEFAULT_CATEGORIES.forEach(dc => {
-        if (!existingKeys.has(dc.key)) {
-            categories.push(dc);
+        .admin-header {
+            background-color: var(--bg-card);
+            border-bottom: 2px solid var(--border-color);
+            padding: 20px 0;
+            box-shadow: var(--shadow-sm);
         }
-    });
-    localStorage.setItem("cozy_categories", JSON.stringify(categories));
-}
-
-let orders = JSON.parse(localStorage.getItem("cozy_orders")) || [];
-let finances = JSON.parse(localStorage.getItem("cozy_finances")) || [];
-
-// Firebase Sync Helpers
-const syncCollectionToFirebase = async (colName, dataArr) => {
-    if (typeof isFirebaseConfigured === 'function' && !isFirebaseConfigured()) return;
-    if (!window.db) return;
-    try {
-        const batch = window.db.batch();
-        dataArr.forEach(item => {
-            if (item && item.id) {
-                const docRef = window.db.collection(colName).doc(String(item.id));
-                batch.set(docRef, item, { merge: true });
-            }
-        });
-        await batch.commit();
-    } catch (e) {
-        console.warn("Firebase sync warning (" + colName + "):", e);
-    }
-};
-
-const deleteFirebaseDoc = async (colName, id) => {
-    if (typeof isFirebaseConfigured === 'function' && !isFirebaseConfigured()) return;
-    if (!window.db) return;
-    try {
-        await window.db.collection(colName).doc(String(id)).delete();
-    } catch (e) {
-        console.warn("Firebase delete warning:", e);
-    }
-};
-
-const setupFirebaseListenersAdmin = () => {
-    if (typeof isFirebaseConfigured === 'function' && !isFirebaseConfigured()) return;
-    if (!window.db) return;
-
-    window.db.collection("products").onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-            const list = [];
-            snapshot.forEach(doc => list.push(doc.data()));
-            products = list;
-            localStorage.setItem("cozy_products", JSON.stringify(products));
-            if (typeof renderDevProductsTable === 'function') renderDevProductsTable();
+        .admin-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-    });
-
-    window.db.collection("categories").onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-            const list = [];
-            snapshot.forEach(doc => list.push(doc.data()));
-            categories = list;
-            localStorage.setItem("cozy_categories", JSON.stringify(categories));
-            if (typeof renderCategories === 'function') renderCategories();
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--color-secondary);
         }
-    });
-
-    window.db.collection("orders").onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-            const list = [];
-            snapshot.forEach(doc => list.push(doc.data()));
-            orders = list;
-            localStorage.setItem("cozy_orders", JSON.stringify(orders));
-            if (typeof renderAdminOrders === 'function') renderAdminOrders();
+        .admin-logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin: 0;
+            font-weight: 800;
         }
-    });
-
-    window.db.collection("finances").onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-            const list = [];
-            snapshot.forEach(doc => list.push(doc.data()));
-            finances = list;
-            localStorage.setItem("cozy_finances", JSON.stringify(finances));
-            if (typeof renderAdminFinances === 'function') renderAdminFinances();
-            if (typeof renderAdminDashboard === 'function') renderAdminDashboard();
+        .admin-logo span {
+            font-size: 12px;
+            font-family: 'Lato', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-muted);
+            display: block;
         }
-    });
-};
-
-// Save State to LocalStorage + Firebase Cloud
-const saveProducts = () => { localStorage.setItem("cozy_products", JSON.stringify(products)); syncCollectionToFirebase("products", products); };
-const saveCategories = () => { localStorage.setItem("cozy_categories", JSON.stringify(categories)); syncCollectionToFirebase("categories", categories); };
-const saveOrders = () => { localStorage.setItem("cozy_orders", JSON.stringify(orders)); syncCollectionToFirebase("orders", orders); };
-const saveFinances = () => { localStorage.setItem("cozy_finances", JSON.stringify(finances)); syncCollectionToFirebase("finances", finances); };
-
-// Initialize Admin UI
-document.addEventListener("DOMContentLoaded", () => {
-    setupFirebaseListenersAdmin();
-    setupAuth();
-    
-    // Check if already authenticated in this session
-    if (sessionStorage.getItem("admin_authenticated") === "true") {
-        showAdminContent();
-    }
-});
-
-// Setup Authentication Trigger
-const setupAuth = () => {
-    const submitBtn = document.getElementById("dev-auth-submit-btn");
-    const passcodeImg = document.getElementById("dev-passcode-input");
-    
-    if (submitBtn) {
-        submitBtn.addEventListener("click", submitAuthLogic);
-    }
-    if (passcodeImg) {
-        passcodeImg.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                submitAuthLogic();
-            }
-        });
-    }
-};
-
-const HASHED_ADMIN_PASS = "8538ba36b04e3a3ff4a1a70261549fa5caf2ec06ad80481cec63010926fd77dd";
-
-const hashString = async (str) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-};
-
-const submitAuthLogic = async () => {
-    const passwordInput = document.getElementById("dev-passcode-input");
-    const errorMsg = document.getElementById("dev-auth-error-msg");
-    
-    const inputHash = await hashString(passwordInput.value || "");
-    if (inputHash === HASHED_ADMIN_PASS) {
-        errorMsg.style.display = "none";
-        sessionStorage.setItem("admin_authenticated", "true");
-        showAdminContent();
-    } else {
-        errorMsg.style.display = "block";
-        passwordInput.value = "";
-        passwordInput.focus();
-    }
-};
-
-const showAdminContent = () => {
-    // Hide login screen, show admin panel
-    document.getElementById("admin-login-wrapper").style.display = "none";
-    document.getElementById("dev-main-content").style.display = "block";
-    
-    // Initialize Dashboard UI & Events
-    initAdminPanel();
-};
-
-const initAdminPanel = () => {
-    setupTabSwitching();
-    setupForms();
-    
-    // Render all modules
-    renderAdminDashboard();
-    renderDevProductsTable();
-    renderAdminOrders();
-    renderAdminFinances();
-    updateExportPreview();
-    renderCategoriesSelectAndList();
-    
-    lucide.createIcons();
-};
-
-// Tab Switching
-const setupTabSwitching = () => {
-    const tabs = document.querySelectorAll(".dev-tab-btn");
-    tabs.forEach(tab => {
-        tab.addEventListener("click", (e) => {
-            tabs.forEach(t => t.classList.remove("active"));
-            e.currentTarget.classList.add("active");
-
-            const tabTarget = e.currentTarget.getAttribute("data-tab");
-            document.querySelectorAll(".dev-tab-content").forEach(tc => tc.classList.remove("active"));
-            
-            const activeContent = document.getElementById(`tab-${tabTarget}`);
-            if (activeContent) activeContent.classList.add("active");
-            
-            lucide.createIcons();
-        });
-    });
-};
-
-// Setup forms (Add Product, Categories, Finances)
-const setupForms = () => {
-    // Add Product Collapsible
-    const toggleProdBtn = document.getElementById("toggle-add-product-form-btn");
-    const prodFormSec = document.getElementById("product-form-section");
-    const closeProdFormBtn = document.getElementById("close-product-form-btn");
-    const addProductForm = document.getElementById("add-product-form");
-    const prodIdInput = document.getElementById("prod-id");
-    const prodFormTitle = document.getElementById("product-form-title");
-    
-    if (toggleProdBtn && prodFormSec) {
-        toggleProdBtn.addEventListener("click", () => {
-            prodFormSec.style.display = prodFormSec.style.display === "none" ? "block" : "none";
-            // Reset to "add" mode
-            prodIdInput.value = "";
-            prodFormTitle.innerText = "Añadir Producto";
-            addProductForm.reset();
-            document.getElementById("product-form-image-preview-container").style.display = "none";
-            document.getElementById("category-form-section").style.display = "none";
-        });
-    }
-    
-    if (closeProdFormBtn && prodFormSec) {
-        closeProdFormBtn.addEventListener("click", () => {
-            prodFormSec.style.display = "none";
-        });
-    }
-
-    // Category Collapsible
-    const toggleCatBtn = document.getElementById("toggle-category-form-btn");
-    const catFormSec = document.getElementById("category-form-section");
-    const closeCatFormBtn = document.getElementById("close-category-form-btn");
-    
-    if (toggleCatBtn && catFormSec) {
-        toggleCatBtn.addEventListener("click", () => {
-            catFormSec.style.display = catFormSec.style.display === "none" ? "block" : "none";
-            document.getElementById("product-form-section").style.display = "none";
-        });
-    }
-    
-    if (closeCatFormBtn && catFormSec) {
-        closeCatFormBtn.addEventListener("click", () => {
-            catFormSec.style.display = "none";
-        });
-    }
-
-    // Finance Collapsible
-    const toggleFinBtn = document.getElementById("toggle-add-finance-btn");
-    const finFormSec = document.getElementById("finance-form-section");
-    const closeFinFormBtn = document.getElementById("close-finance-form-btn");
-    
-    if (toggleFinBtn && finFormSec) {
-        toggleFinBtn.addEventListener("click", () => {
-            finFormSec.style.display = finFormSec.style.display === "none" ? "block" : "none";
-        });
-    }
-    
-    if (closeFinFormBtn && finFormSec) {
-        closeFinFormBtn.addEventListener("click", () => {
-            finFormSec.style.display = "none";
-        });
-    }
-
-    // Handle photo file / URL input changes
-    const imgFileInput = document.getElementById("prod-image-file");
-    const imgUrlInput = document.getElementById("prod-image-url");
-    const imgPreviewContainer = document.getElementById("product-form-image-preview-container");
-    const imgPreviewDiv = document.getElementById("product-form-image-preview");
-    const clearImgBtn = document.getElementById("clear-product-form-image-btn");
-
-    if (imgFileInput) {
-        imgFileInput.addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    imgPreviewDiv.innerHTML = `<img src="${event.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
-                    imgPreviewContainer.style.display = "flex";
-                    imgUrlInput.value = ""; // clear URL when file is chosen
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    if (imgUrlInput) {
-        imgUrlInput.addEventListener("input", (e) => {
-            const val = e.target.value.trim();
-            if (val) {
-                imgPreviewDiv.innerHTML = `<img src="${val}" style="width:100%; height:100%; object-fit:cover;">`;
-                imgPreviewContainer.style.display = "flex";
-                if (imgFileInput) imgFileInput.value = ""; // clear file
-            } else {
-                imgPreviewContainer.style.display = "none";
-            }
-        });
-    }
-
-    if (clearImgBtn) {
-        clearImgBtn.addEventListener("click", () => {
-            if (imgFileInput) imgFileInput.value = "";
-            if (imgUrlInput) imgUrlInput.value = "";
-            imgPreviewContainer.style.display = "none";
-            imgPreviewDiv.innerHTML = "";
-        });
-    }
-
-    // Submit Product Form
-    if (addProductForm) {
-        addProductForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const idVal = prodIdInput.value;
-            const name = document.getElementById("prod-name").value.trim();
-            const category = document.getElementById("prod-category").value;
-            const pricePerKg = parseFloat(document.getElementById("prod-price").value);
-            const mode = document.getElementById("prod-mode").value;
-            const isFeatured = document.getElementById("prod-featured").checked;
-            const description = (document.getElementById("prod-description") ? document.getElementById("prod-description").value.trim() : "");
-            const sinTacc = (document.getElementById("prod-sintacc") ? document.getElementById("prod-sintacc").checked : false);
-
-            // Get image source (Base64 from preview or URL)
-            let image = "";
-            const previewImg = imgPreviewDiv.querySelector("img");
-            if (previewImg) {
-                image = previewImg.src;
-            } else {
-                // Fallback to emoji placeholder based on category
-                if (category === "frutos-secos") image = "🌰";
-                else if (category === "legumbres") image = "🫘";
-                else if (category === "mixes") image = "🥣";
-                else image = "🌾";
-            }
-
-            if (idVal) {
-                // Edit mode
-                const index = products.findIndex(p => p.id === parseInt(idVal));
-                if (index > -1) {
-                    products[index] = {
-                        ...products[index],
-                        name,
-                        category,
-                        pricePerKg,
-                        mode,
-                        image,
-                        isFeatured,
-                        description,
-                        sinTacc
-                    };
-                    alert("Producto actualizado con éxito.");
-                }
-            } else {
-                // Add mode
-                const newProduct = {
-                    id: Date.now(),
-                    name,
-                    category,
-                    pricePerKg,
-                    mode,
-                    image,
-                    isFeatured,
-                    description,
-                    sinTacc
-                };
-                products.push(newProduct);
-                alert("Producto creado con éxito.");
-            }
-
-            saveProducts();
-            addProductForm.reset();
-            if (imgFileInput) imgFileInput.value = "";
-            if (imgUrlInput) imgUrlInput.value = "";
-            imgPreviewContainer.style.display = "none";
-            prodFormSec.style.display = "none";
-
-            renderDevProductsTable();
-            updateExportPreview();
-            renderAdminDashboard();
-        });
-    }
-
-    // Submit Category Form
-    const addCategoryForm = document.getElementById("add-category-form");
-    if (addCategoryForm) {
-        addCategoryForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const catNameInput = document.getElementById("cat-name");
-            const name = catNameInput.value.trim();
-            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-            if (!name || !slug) return;
-
-            // Avoid duplicates
-            if (categories.some(c => c.key === slug)) {
-                alert("Esta categoría ya existe.");
-                return;
-            }
-
-            categories.push({ key: slug, name: name });
-            saveCategories();
-            catNameInput.value = "";
-            
-            renderCategoriesSelectAndList();
-            renderDevProductsTable();
-            renderAdminDashboard();
-            alert("Categoría creada con éxito.");
-        });
-    }
-
-    // Reset / Sync Full Catalog Button
-    const syncCatalogBtn = document.getElementById("sync-full-catalog-btn");
-    if (syncCatalogBtn) {
-        syncCatalogBtn.addEventListener("click", () => {
-            products = [...DEFAULT_PRODUCTS];
-            categories = [...DEFAULT_CATEGORIES];
-            saveProducts();
-            saveCategories();
-            
-            renderCategoriesSelectAndList();
-            renderDevProductsTable();
-            updateExportPreview();
-            renderAdminDashboard();
-            alert("¡Se ha restablecido el catálogo completo con los 39 productos!");
-        });
-    }
-
-    const resetBtn = document.getElementById("reset-catalog-btn");
-    if (resetBtn) {
-        resetBtn.addEventListener("click", () => {
-            if (confirm("¿Está seguro de vaciar el catálogo y reiniciar todas las categorías? Se borrarán todos los cambios.")) {
-                products = [...DEFAULT_PRODUCTS];
-                categories = [...DEFAULT_CATEGORIES];
-                saveProducts();
-                saveCategories();
-                
-                renderCategoriesSelectAndList();
-                renderDevProductsTable();
-                updateExportPreview();
-                renderAdminDashboard();
-            }
-        });
-    }
-
-    // Submit Finance Form
-    const addFinanceForm = document.getElementById("add-finance-form");
-    if (addFinanceForm) {
-        addFinanceForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const type = document.getElementById("fin-type").value;
-            const concept = document.getElementById("fin-concept").value.trim();
-            const category = document.getElementById("fin-category").value;
-            const amount = parseFloat(document.getElementById("fin-amount").value);
-
-            if (!concept || isNaN(amount) || amount <= 0) {
-                alert("Complete todos los campos con montos válidos.");
-                return;
-            }
-
-            const newFin = {
-                id: "fin-" + Math.floor(1000 + Math.random() * 9000),
-                type,
-                concept,
-                category,
-                amount,
-                date: new Date().toISOString()
-            };
-
-            finances.push(newFin);
-            saveFinances();
-            renderAdminFinances();
-
-            e.target.reset();
-            finFormSec.style.display = "none";
-            updateExportPreview();
-            alert("Movimiento contable registrado con éxito.");
-        });
-    }
-
-    // Excel Export trigger
-    const exportBtn = document.getElementById("btn-execute-export");
-    if (exportBtn) {
-        exportBtn.addEventListener("click", exportToExcel);
-    }
-
-    // Search input inside catalog table
-    const devSearchInput = document.getElementById("dev-search-input");
-    if (devSearchInput) {
-        devSearchInput.addEventListener("input", () => {
-            renderDevProductsTable();
-        });
-    }
-};
-
-// Render Categories selectors & lists in admin
-const renderCategoriesSelectAndList = () => {
-    // 1. Selector for product form
-    const formSelect = document.getElementById("prod-category");
-    if (formSelect) {
-        formSelect.innerHTML = "";
-        categories.forEach(cat => {
-            formSelect.innerHTML += `<option value="${cat.key}">${cat.name}</option>`;
-        });
-    }
-
-    // 2. Admin manager list
-    const adminList = document.getElementById("admin-categories-list");
-    if (adminList) {
-        adminList.innerHTML = "";
-        categories.forEach(cat => {
-            adminList.innerHTML += `
-                <li class="admin-category-item" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
-                    <span><strong>${cat.name}</strong> <small style="color:var(--color-text-muted);">(${cat.key})</small></span>
-                    <button type="button" onclick="deleteCategory('${cat.key}')" title="Eliminar Categoría" style="border:none; background:none; color:var(--color-danger); cursor:pointer; font-weight:700;">Eliminar</button>
-                </li>
-            `;
-        });
-    }
-};
-
-// Delete Category logic
-window.deleteCategory = (catKey) => {
-    if (confirm(`¿Estás seguro de eliminar la categoría "${catKey}"? Los productos en ella serán movidos a "Otros".`)) {
-        // Remove category
-        categories = categories.filter(c => c.key !== catKey);
-        saveCategories();
-
-        // Move products to "Otros" category
-        let changedAnyProduct = false;
-        products.forEach(p => {
-            if (p.category === catKey) {
-                p.category = "Otros";
-                changedAnyProduct = true;
-            }
-        });
-
-        // Ensure "Otros" exists in categories list if it doesn't already
-        if (changedAnyProduct && !categories.some(c => c.key === "Otros")) {
-            categories.push({ key: "Otros", name: "Otros" });
-            saveCategories();
+        .admin-login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 120px);
+            padding: 20px;
         }
+        .admin-login-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
 
-        if (changedAnyProduct) saveProducts();
-
-        renderCategoriesSelectAndList();
-        renderDevProductsTable();
-        renderAdminDashboard();
-        updateExportPreview();
-    }
-};
-
-// Image element inside tables
-const renderDevTableImageHTML = (image) => {
-    if (!image) return `<span class="table-emoji">📦</span>`;
-    if (image.startsWith("http") || image.startsWith("data:image") || image.includes("/") || image.includes(".")) {
-        return `<img src="${image}" style="width:36px; height:36px; object-fit:cover; border-radius:var(--border-radius-sm); border:1px solid var(--border-color);">`;
-    }
-    return `<span class="table-emoji" style="font-size: 22px;">${image}</span>`;
-};
-
-// Render Products Catalog Table
-const renderDevProductsTable = () => {
-    const tableBody = document.getElementById("dev-products-table-body");
-    if (!tableBody) return;
-    tableBody.innerHTML = "";
-
-    const searchInput = document.getElementById("dev-search-input");
-    const query = searchInput ? searchInput.value.toLowerCase() : "";
-    const filtered = products.filter(p => p.name.toLowerCase().includes(query));
-
-    if (filtered.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--color-text-muted);">No se encontraron productos.</td></tr>`;
-        return;
-    }
-
-    filtered.forEach(p => {
-        const row = document.createElement("tr");
-        const sinTaccTag = p.sinTacc ? `<span style="background:#e8f5e9; color:#2e7d32; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; margin-left:6px; border:1px solid #a5d6a7;">🌾 Sin TACC</span>` : '';
-        row.innerHTML = `
-            <td>${renderDevTableImageHTML(p.image)}</td>
-            <td><strong>${p.name}</strong>${sinTaccTag}${p.description ? `<br><small style="color:var(--color-text-muted); font-size:11px;">${p.description}</small>` : ''}</td>
-            <td><span class="badge-category" style="background:#EFE6DD; padding:4px 8px; border-radius:var(--border-radius-sm); font-size:11px; font-weight:700;">${formatCategoryName(p.category)}</span></td>
-            <td>${p.mode === 'weight' ? 'Peso Variable' : 'Kilo Cerrado'}</td>
-            <td>
-                <input type="number" 
-                       class="table-price-input" 
-                       value="${p.pricePerKg}" 
-                       min="0"
-                       onchange="updateProductPrice(${p.id}, this.value)"
-                       style="width: 80px; padding: 4px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm);">
-            </td>
-            <td>
-                <button type="button" class="btn-novedad-toggle ${p.isFeatured ? 'active' : ''}" onclick="toggleDevProductFeatured(${p.id})">
-                    ${p.isFeatured ? '🔥 Destacado' : '☆ Marcar'}
-                </button>
-            </td>
-            <td>
-                <div class="btn-row-actions">
-                    <button class="btn-table-edit" onclick="editDevProduct(${p.id})" style="padding: 4px 8px; margin-right: 4px; font-size: 12px; cursor: pointer;">Editar</button>
-                    <button class="btn-table-delete" onclick="deleteDevProduct(${p.id})" style="padding: 4px 8px; font-size: 12px; cursor: pointer;">Eliminar</button>
+    <!-- Header de la consola -->
+    <header class="admin-header">
+        <div class="admin-header-container">
+            <div class="admin-logo">
+                <i data-lucide="settings" class="logo-icon" style="color: var(--color-primary); width: 28px; height: 28px;"></i>
+                <div>
+                    <h1>El Almacén de Guada</h1>
+                    <span>Consola de Administración</span>
                 </div>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
+            </div>
+            <a href="index.html" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Volver a la Tienda
+            </a>
+        </div>
+    </header>
 
-    lucide.createIcons();
-};
+    <!-- Pantalla de Login (Se muestra por defecto si no está autenticado) -->
+    <div class="admin-login-wrapper" id="admin-login-wrapper">
+        <div class="admin-login-card" id="dev-auth-card">
+            <div class="form-group" style="margin-bottom: 24px; width: 100%;">
+                <input type="password" id="dev-passcode-input" placeholder="Contraseña" style="width: 100%; text-align: center; padding: 12px; font-size: 15px; border: 2px solid var(--border-color); border-radius: var(--border-radius-md); outline: none;" autofocus>
+            </div>
+            <button class="btn btn-primary btn-block" id="dev-auth-submit-btn" style="padding: 12px; font-size: 14px; font-weight: 700;">Ingresar al Panel</button>
+            <p id="dev-auth-error-msg" style="color: var(--color-danger); font-size: 13px; margin-top: 14px; display: none; text-align: center; font-weight: 700;">
+                ⚠️ Contraseña incorrecta
+            </p>
+        </div>
+    </div>
 
-// Edit catalog product
-window.editDevProduct = (productId) => {
-    const p = products.find(prod => prod.id === productId);
-    if (!p) return;
+    <!-- Contenido Principal del Panel (Oculto inicialmente) -->
+    <main id="dev-main-content" style="display: none; max-width: 1200px; margin: 40px auto; padding: 0 20px 60px 20px;">
+        <div class="dev-tabs" style="overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; margin-bottom: 25px; display: flex; gap: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+            <button class="dev-tab-btn active" data-tab="dashboard" style="font-size: 14px; padding: 10px 20px; border-radius: var(--border-radius-md);">📊 Resumen</button>
+            <button class="dev-tab-btn" data-tab="manage-products" style="font-size: 14px; padding: 10px 20px; border-radius: var(--border-radius-md);">📦 Catálogo</button>
+            <button class="dev-tab-btn" data-tab="orders" style="font-size: 14px; padding: 10px 20px; border-radius: var(--border-radius-md);">🛒 Pedidos</button>
+            <button class="dev-tab-btn" data-tab="finances" style="font-size: 14px; padding: 10px 20px; border-radius: var(--border-radius-md);">💰 Caja</button>
+            <button class="dev-tab-btn" data-tab="export" style="font-size: 14px; padding: 10px 20px; border-radius: var(--border-radius-md);">📥 Exportar</button>
+        </div>
 
-    // Show form and scroll
-    const prodFormSec = document.getElementById("product-form-section");
-    prodFormSec.style.display = "block";
-    document.getElementById("category-form-section").style.display = "none";
-    document.getElementById("product-form-title").innerText = `Editar Producto: ${p.name}`;
-    
-    // Fill fields
-    document.getElementById("prod-id").value = p.id;
-    document.getElementById("prod-name").value = p.name;
-    document.getElementById("prod-category").value = p.category;
-    document.getElementById("prod-price").value = p.pricePerKg;
-    document.getElementById("prod-mode").value = p.mode;
-    document.getElementById("prod-featured").checked = Boolean(p.isFeatured);
-    if (document.getElementById("prod-description")) document.getElementById("prod-description").value = p.description || "";
-    if (document.getElementById("prod-sintacc")) document.getElementById("prod-sintacc").checked = Boolean(p.sinTacc);
-    
-    const imgPreviewContainer = document.getElementById("product-form-image-preview-container");
-    const imgPreviewDiv = document.getElementById("product-form-image-preview");
-    
-    if (p.image) {
-        if (p.image.startsWith("http") || p.image.startsWith("data:image") || p.image.includes("/") || p.image.includes(".")) {
-            imgPreviewDiv.innerHTML = `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">`;
-            document.getElementById("prod-image-url").value = p.image;
-        } else {
-            imgPreviewDiv.innerHTML = `<span style="font-size:24px;">${p.image}</span>`;
-            document.getElementById("prod-image-url").value = "";
-        }
-        imgPreviewContainer.style.display = "flex";
-    } else {
-        imgPreviewContainer.style.display = "none";
-    }
+        <!-- Tab 1: Dashboard / Resumen -->
+        <div class="dev-tab-content active" id="tab-dashboard">
+            <div class="admin-kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                <div class="kpi-card kpi-info" style="border-left: 4px solid var(--color-secondary); padding: 20px; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <span class="kpi-val" id="admin-kpi-orders" style="display: block; font-size: 28px; font-weight: 700; color: var(--color-text-main);">0</span>
+                    <span class="kpi-lbl" style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.5px;">Pedidos Totales</span>
+                </div>
+                <div class="kpi-card kpi-success" style="border-left: 4px solid #5A7863; padding: 20px; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <span class="kpi-val" id="admin-kpi-revenue" style="display: block; font-size: 28px; font-weight: 700; color: var(--color-text-main);">$0.00</span>
+                    <span class="kpi-lbl" style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.5px;">Ingresos Ventas</span>
+                </div>
+                <div class="kpi-card kpi-warning" style="border-left: 4px solid #DCA144; padding: 20px; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <span class="kpi-val" id="admin-kpi-products" style="display: block; font-size: 28px; font-weight: 700; color: var(--color-text-main);">0</span>
+                    <span class="kpi-lbl" style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.5px;">Productos Activos</span>
+                </div>
+                <div class="kpi-card kpi-primary" style="border-left: 4px solid var(--color-primary); padding: 20px; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <span class="kpi-val" id="admin-kpi-categories" style="display: block; font-size: 28px; font-weight: 700; color: var(--color-text-main);">0</span>
+                    <span class="kpi-lbl" style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.5px;">Categorías</span>
+                </div>
+            </div>
+            <div class="admin-charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-top: 25px;">
+                <div class="admin-chart-card" style="background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <h4 style="margin-bottom: 16px; color: var(--color-secondary); font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="trending-up" style="width:18px; height:18px;"></i> Ventas (Últimos 7 días)</h4>
+                    <div style="position: relative; height: 260px; width: 100%;">
+                        <canvas id="adminSalesChart"></canvas>
+                    </div>
+                </div>
+                <div class="admin-chart-card" style="background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <h4 style="margin-bottom: 16px; color: var(--color-secondary); font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="pie-chart" style="width:18px; height:18px;"></i> Stock por Categoría</h4>
+                    <div style="position: relative; height: 260px; width: 100%;">
+                        <canvas id="adminCategoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="recent-orders-section" style="margin-top: 35px;">
+                <h4 style="margin-bottom: 16px; color: var(--color-secondary); display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700;"><i data-lucide="clock"></i> Últimos Pedidos Recibidos</h4>
+                <div class="manage-table-container" style="background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);">
+                    <table class="dev-table" style="margin: 0; border: none;">
+                        <thead>
+                            <tr>
+                                <th>ID Pedido</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-recent-orders-tbody">
+                            <!-- Dynamic Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-    prodFormSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-};
+        <!-- Tab 2: Catalog / Catálogo -->
+        <div class="dev-tab-content" id="tab-manage-products">
+            <div style="display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap;">
+                <button class="btn btn-primary" id="toggle-add-product-form-btn" style="padding: 10px 20px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="plus-circle" style="width:18px; height:18px;"></i> Nuevo Producto
+                </button>
+                <button class="btn btn-secondary" id="toggle-category-form-btn" style="padding: 10px 20px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="tag" style="width:18px; height:18px;"></i> Gestionar Categorías
+                </button>
+                <button class="btn" id="sync-full-catalog-btn" style="padding: 10px 20px; font-size: 13px; display: flex; align-items: center; gap: 8px; background: #fff8e1; color: #b78103; border: 1px solid #ffe082; font-weight: 700; cursor: pointer; border-radius: var(--border-radius-md);">
+                    <i data-lucide="refresh-cw" style="width:18px; height:18px;"></i> Restablecer Catálogo Completo (71 Productos)
+                </button>
+            </div>
 
-// Toggle Featured live
-window.toggleDevProductFeatured = (productId) => {
-    const p = products.find(prod => prod.id === productId);
-    if (p) {
-        p.isFeatured = !p.isFeatured;
-        saveProducts();
-        renderDevProductsTable();
-    }
-};
+            <!-- Collapsible Product Form -->
+            <div class="dev-collapsible-section" id="product-form-section" style="display: none; background-color: white; border: 2px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 25px; margin-bottom: 25px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 id="product-form-title" style="color: var(--color-secondary); font-size: 18px; font-weight: 700; font-family: 'Playfair Display', serif;">Añadir Producto</h3>
+                    <button type="button" class="close-modal-btn" id="close-product-form-btn" style="width: 32px; height: 32px; font-size: 14px; border-radius: 50%; display:flex; align-items:center; justify-content:center; border: 1px solid var(--border-color); background: var(--bg-main); cursor: pointer;"><i data-lucide="x"></i></button>
+                </div>
+                <form id="add-product-form" class="dev-form">
+                    <input type="hidden" id="prod-id" value="">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="prod-name" style="font-weight: 700; font-size: 13px;">Nombre del Producto</label>
+                            <input type="text" id="prod-name" required placeholder="Ej: Almendras Peladas Guara" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="prod-category" style="font-weight: 700; font-size: 13px;">Categoría</label>
+                            <select id="prod-category" required style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: white;">
+                                <!-- Loaded dynamically -->
+                            </select>
+                        </div>
+                    </div>
 
-// Update price in catalog table directly
-window.updateProductPrice = (productId, newPrice) => {
-    const parsedPrice = parseFloat(newPrice);
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
-        alert("El precio debe ser un número positivo.");
-        renderDevProductsTable();
-        return;
-    }
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="prod-price" style="font-weight: 700; font-size: 13px;">Precio por Kilo ($)</label>
+                            <input type="number" id="prod-price" min="0" required placeholder="Ej: 9500" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="prod-mode" style="font-weight: 700; font-size: 13px;">Modalidad de Venta</label>
+                            <select id="prod-mode" required style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: white;">
+                                <option value="weight">Por Peso Variable (con barra deslizadora)</option>
+                                <option value="kilo">Por Kilo Cerrado (únicamente 1kg, 2kg, etc.)</option>
+                            </select>
+                        </div>
+                    </div>
 
-    const index = products.findIndex(p => p.id === productId);
-    if (index > -1) {
-        products[index].pricePerKg = parsedPrice;
-        saveProducts();
-        updateExportPreview();
-    }
-};
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="prod-image-file" style="font-weight: 700; font-size: 13px;">Subir Foto Real</label>
+                            <input type="file" id="prod-image-file" accept="image/*" style="padding: 8px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: var(--bg-main);">
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="prod-image-url" style="font-weight: 700; font-size: 13px;">O copiar URL de Imagen</label>
+                            <input type="text" id="prod-image-url" placeholder="https://ejemplo.com/imagen.jpg" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                        </div>
+                    </div>
 
-// Delete product from catalog
-window.deleteDevProduct = (productId) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este producto del catálogo?")) {
-        deleteFirebaseDoc("products", productId);
-        products = products.filter(p => p.id !== productId);
-        saveProducts();
-        renderDevProductsTable();
-        updateExportPreview();
-        renderAdminDashboard();
-    }
-};
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+                        <label for="prod-description" style="font-weight: 700; font-size: 13px;">Descripción Corta (opcional)</label>
+                        <textarea id="prod-description" rows="2" placeholder="Ej: Origen Mendoza. Cosecha fresca, ideales para granola o consumo directo." style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); font-family: inherit; font-size: 13px; resize: vertical;"></textarea>
+                    </div>
 
-// Render Admin Dashboard Modules
-const renderAdminDashboard = () => {
-    const totalOrdersCount = orders.length;
-    const totalRevenueSum = orders.reduce((sum, o) => sum + o.total, 0);
-    const totalProductsCount = products.length;
-    const totalCategoriesCount = categories.length;
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0 20px 0;">
+                        <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; background: var(--bg-main); padding: 12px 16px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); display: flex;">
+                            <input type="checkbox" id="prod-featured" style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="prod-featured" style="cursor: pointer; font-weight: 700; margin: 0; color: var(--color-primary); font-size: 13px;">🔥 Destacar en Novedades (Inicio)</label>
+                        </div>
+                        <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; background: #e8f5e9; padding: 12px 16px; border-radius: var(--border-radius-md); border: 1px solid #c8e6c9; display: flex;">
+                            <input type="checkbox" id="prod-sintacc" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2e7d32;">
+                            <label for="prod-sintacc" style="cursor: pointer; font-weight: 700; margin: 0; color: #2e7d32; font-size: 13px;">🌾 Apto Sin TACC (Libre de Gluten)</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Image Preview Area -->
+                    <div id="product-form-image-preview-container" style="display: none; align-items: center; gap: 16px; background: var(--bg-main); padding: 12px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); margin-bottom: 20px;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--color-text-muted);">Foto actual:</span>
+                        <div id="product-form-image-preview" style="width: 60px; height: 60px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: white;"></div>
+                        <button type="button" class="btn-remove-cart" id="clear-product-form-image-btn" style="font-size: 12px; background:none; border:none; cursor:pointer; color: var(--color-danger); font-weight:700; display:flex; align-items:center; gap:4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Quitar Foto</button>
+                    </div>
 
-    document.getElementById("admin-kpi-orders").innerText = totalOrdersCount;
-    document.getElementById("admin-kpi-revenue").innerText = formatCurrency(totalRevenueSum);
-    document.getElementById("admin-kpi-products").innerText = totalProductsCount;
-    document.getElementById("admin-kpi-categories").innerText = totalCategoriesCount;
+                    <button type="submit" class="btn btn-primary btn-block" id="product-form-submit-btn" style="padding: 12px; font-size: 14px;">Guardar Producto</button>
+                </form>
+            </div>
 
-    // Render dashboard table
-    const dashboardTbody = document.getElementById("dashboard-recent-orders-tbody");
-    if (dashboardTbody) {
-        dashboardTbody.innerHTML = "";
-        const recentOrders = [...orders].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
-        
-        if (recentOrders.length === 0) {
-            dashboardTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--color-text-muted);">Sin pedidos registrados.</td></tr>`;
-        } else {
-            recentOrders.forEach(o => {
-                const tr = document.createElement("tr");
-                let badgeClass = "badge-status-pendiente";
-                if (o.status === "Confirmado") badgeClass = "badge-status-confirmado";
-                else if (o.status === "Entregado") badgeClass = "badge-status-entregado";
-                else if (o.status === "Cancelado") badgeClass = "badge-status-cancelado";
+            <!-- Collapsible Category Form & List -->
+            <div class="dev-collapsible-section" id="category-form-section" style="display: none; background-color: white; border: 2px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 25px; margin-bottom: 25px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: var(--color-secondary); font-size: 18px; font-weight: 700; font-family: 'Playfair Display', serif;">Gestionar Categorías</h3>
+                    <button type="button" class="close-modal-btn" id="close-category-form-btn" style="width: 32px; height: 32px; font-size: 14px; border-radius: 50%; display:flex; align-items:center; justify-content:center; border: 1px solid var(--border-color); background: var(--bg-main); cursor: pointer;"><i data-lucide="x"></i></button>
+                </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start;">
+                    <!-- Form to create -->
+                    <form id="add-category-form" class="dev-form" style="background: var(--bg-main); padding: 20px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+                        <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                            <label for="cat-name" style="font-weight: 700; font-size: 13px;">Nombre de Categoría</label>
+                            <input type="text" id="cat-name" required placeholder="Ej: Especias" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" style="padding: 12px; font-size: 13px;">Crear Categoría</button>
+                    </form>
+                    <!-- List to delete -->
+                    <div style="background: var(--bg-main); padding: 20px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); max-height: 250px; overflow-y: auto;">
+                        <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--color-text-main); font-weight:700;">Categorías Activas</h4>
+                        <ul id="admin-categories-list" style="list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0;">
+                            <!-- Dynamic List of Categories -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
-                tr.innerHTML = `
-                    <td><strong>#${o.id}</strong></td>
-                    <td>${new Date(o.createdAt).toLocaleDateString('es-AR')}</td>
-                    <td>${o.customer.name}</td>
-                    <td style="font-weight:700;">${formatCurrency(o.total)}</td>
-                    <td><span class="badge-status ${badgeClass}">${o.status}</span></td>
-                `;
-                dashboardTbody.appendChild(tr);
-            });
-        }
-    }
+            <!-- Products Catalog Table -->
+            <div style="margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <h4 style="color: var(--color-secondary); font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="database" style="width:18px; height:18px;"></i> Catálogo de Productos</h4>
+                    <div class="search-bar-wrapper" style="max-width: 300px; background: white; border: 1px solid var(--border-color); padding: 6px 14px; height: 40px; display: flex; align-items: center; border-radius: var(--border-radius-md); box-shadow: var(--shadow-sm); width: 100%;">
+                        <i data-lucide="search" style="width: 16px; height: 16px; margin-right: 10px; color: var(--color-text-muted);"></i>
+                        <input type="text" id="dev-search-input" placeholder="Buscar en catálogo..." style="font-size: 13px; border:none; outline:none; width: 100%; background: transparent;">
+                    </div>
+                </div>
+                <div class="manage-table-container" style="background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); overflow-x: auto; overflow-y: auto; max-height: 600px; box-shadow: var(--shadow-sm); position: relative;">
+                    <table class="dev-table" style="margin: 0; border: none; width: 100%;">
+                        <thead style="position: sticky; top: 0; z-index: 10; background: #FAF5F0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Modalidad</th>
+                                <th>Precio / kg</th>
+                                <th>Novedades</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dev-products-table-body">
+                            <!-- Dynamic Table Rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="dev-actions-footer" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; justify-content: flex-end;">
+                    <button class="btn btn-secondary" id="reset-catalog-btn" style="padding: 8px 16px; font-size: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="refresh-cw" style="width:14px; height:14px;"></i> Restaurar Catálogo Inicial (Vacío)
+                    </button>
+                </div>
+            </div>
+        </div>
 
-    // ChartJS Graphs
-    const ctxSales = document.getElementById("adminSalesChart");
-    const ctxCategory = document.getElementById("adminCategoryChart");
+        <!-- Tab 3: Orders / Pedidos -->
+        <div class="dev-tab-content" id="tab-orders">
+            <h4 style="color: var(--color-secondary); margin-bottom: 16px; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="shopping-basket" style="width:18px; height:18px;"></i> Registro de Pedidos</h4>
+            <div class="manage-table-container" style="background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);">
+                <table class="dev-table" style="margin: 0; border: none;">
+                    <thead>
+                        <tr>
+                            <th>ID Pedido</th>
+                            <th>Fecha</th>
+                            <th>Cliente / Envío</th>
+                            <th>Detalle Compra</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-orders-table-body">
+                        <!-- Dynamic Orders -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    if (!ctxSales || !ctxCategory) return;
+        <!-- Tab 4: Cash / Caja -->
+        <div class="dev-tab-content" id="tab-finances">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                <h4 style="color: var(--color-secondary); font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="dollar-sign" style="width:18px; height:18px;"></i> Libro Contable de Caja</h4>
+                <button class="btn btn-primary" id="toggle-add-finance-btn" style="padding: 8px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px;"><i data-lucide="plus" style="width:16px; height:16px;"></i> Registrar Movimiento</button>
+            </div>
 
-    if (window.salesChartInstance) {
-        window.salesChartInstance.destroy();
-    }
-    if (window.categoryChartInstance) {
-        window.categoryChartInstance.destroy();
-    }
+            <!-- Collapsible Finance Form -->
+            <div id="finance-form-section" style="display: none; background-color: white; border: 2px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 25px; margin-bottom: 25px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: var(--color-secondary); font-size: 16px; font-weight: 700; font-family: 'Playfair Display', serif;">Registrar Movimiento Financiero</h3>
+                    <button type="button" class="close-modal-btn" id="close-finance-form-btn" style="width: 32px; height: 32px; font-size: 14px; border-radius: 50%; display:flex; align-items:center; justify-content:center; border: 1px solid var(--border-color); background: var(--bg-main); cursor: pointer;"><i data-lucide="x"></i></button>
+                </div>
+                <form id="add-finance-form" class="dev-form">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="fin-type" style="font-weight: 700; font-size: 13px;">Tipo de Movimiento</label>
+                            <select id="fin-type" required style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: white;">
+                                <option value="income">Ingreso (+)</option>
+                                <option value="expense">Egreso (-)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="fin-concept" style="font-weight: 700; font-size: 13px;">Concepto / Detalle</label>
+                            <input type="text" id="fin-concept" required placeholder="Ej: Compra mercadería mayorista" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                        </div>
+                    </div>
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="fin-category" style="font-weight: 700; font-size: 13px;">Categoría</label>
+                            <select id="fin-category" required style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: white;">
+                                <option value="Ventas">Ventas</option>
+                                <option value="Inventario">Inventario/Mercadería</option>
+                                <option value="Packaging">Embalaje/Packaging</option>
+                                <option value="Publicidad">Marketing/Publicidad</option>
+                                <option value="Envío">Flete/Logística</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                            <label for="fin-amount" style="font-weight: 700; font-size: 13px;">Monto ($)</label>
+                            <input type="number" id="fin-amount" min="1" required placeholder="Ej: 5000" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 12px; font-size: 14px;">Registrar en Caja</button>
+                </form>
+            </div>
 
-    // Sales over last 7 days
-    const days = [];
-    const salesValues = [];
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dayStr = d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
-        days.push(dayStr);
+            <!-- Balance Row -->
+            <div class="admin-kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                <div class="kpi-card kpi-success" style="border-left: 4px solid #5A7863; padding: 20px; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <span class="kpi-val" id="admin-finance-incomes" style="display: block; font-size: 28px; font-weight: 700; color: var(--color-text-main);">$0.00</span>
+                    <span class="kpi-lbl" style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.5px;">Ingresos de Caja</span>
+                </div>
+                <div class="kpi-card kpi-danger" style="border-left: 4px solid var(--color-danger); padding: 20px; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <span class="kpi-val" id="admin-finance-expenses" style="display: block; font-size: 28px; font-weight: 700; color: var(--color-text-main);">$0.00</span>
+                    <span class="kpi-lbl" style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.5px;">Egresos de Caja</span>
+                </div>
+                <div class="kpi-card kpi-primary" id="admin-finance-balance-card" style="border-left: 4px solid var(--color-primary); padding: 20px; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <span class="kpi-val" id="admin-finance-balance" style="display: block; font-size: 28px; font-weight: 700; color: var(--color-text-main);">$0.00</span>
+                    <span class="kpi-lbl" style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.5px;">Balance Neto</span>
+                </div>
+            </div>
 
-        const dayOrders = orders.filter(o => {
-            const oDate = new Date(o.createdAt);
-            return oDate.getDate() === d.getDate() && oDate.getMonth() === d.getMonth();
-        });
-        const daySum = dayOrders.reduce((sum, o) => sum + o.total, 0);
-        salesValues.push(daySum);
-    }
+            <!-- Finance movements Table -->
+            <div class="manage-table-container" style="background: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);">
+                <table class="dev-table" style="margin: 0; border: none;">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Concepto</th>
+                            <th>Categoría</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-finances-table-body">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    window.salesChartInstance = new Chart(ctxSales, {
-        type: 'line',
-        data: {
-            labels: days,
-            datasets: [{
-                label: 'Ingresos por Ventas ($)',
-                data: salesValues,
-                borderColor: '#C86B4A',
-                backgroundColor: 'rgba(200, 107, 74, 0.05)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } },
-                x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } }
-            }
-        }
-    });
+        <!-- Tab 5: Export / Exportar -->
+        <div class="dev-tab-content" id="tab-export">
+            <h4 style="color: var(--color-secondary); margin-bottom: 20px; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i data-lucide="download" style="width:18px; height:18px;"></i> Exportar Datos Consolidados a Excel</h4>
+            <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; align-items: start;">
+                <!-- Options Card -->
+                <div style="background-color: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: var(--shadow-sm);">
+                    <h3 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 5px;">1. Selecciona las planillas a incluir</h3>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                            <input type="checkbox" id="ex-sales" checked style="width: 18px; height: 18px; accent-color: var(--color-primary);"> Historial de Pedidos (Ventas)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                            <input type="checkbox" id="ex-stock" checked style="width: 18px; height: 18px; accent-color: var(--color-primary);"> Catálogo de Productos (Inventario)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                            <input type="checkbox" id="ex-finances" checked style="width: 18px; height: 18px; accent-color: var(--color-primary);"> Movimientos de Caja (Finanzas)
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-block" id="btn-execute-export" style="margin-top: 10px; padding: 12px; font-size: 14px;"><i data-lucide="download"></i> Descargar Excel (.xlsx)</button>
+                </div>
+                
+                <!-- Preview Card -->
+                <div style="background-color: white; border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <h3 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 5px;">2. Vista previa del reporte</h3>
+                    <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 18px;">Se generará un archivo Excel (.xlsx) organizado con pestañas independientes para cada tipo de dato seleccionado.</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px; padding:0; margin:0;">
+                        <li style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                            <span>Registros de Pedidos:</span>
+                            <strong id="preview-sales-count">0 filas</strong>
+                        </li>
+                        <li style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                            <span>Productos en Catálogo:</span>
+                            <strong id="preview-stock-count">0 filas</strong>
+                        </li>
+                        <li style="display: flex; justify-content: space-between; padding-bottom: 10px;">
+                            <span>Movimientos Contables:</span>
+                            <strong id="preview-finances-count">0 filas</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    // Category distribution doughnut
-    const catLabels = categories.map(c => c.name);
-    const catCounts = categories.map(c => products.filter(p => p.category === c.key).length);
-    const colors = ['#C86B4A', '#5A7863', '#DCA144', '#7F5539', '#B7B7A4', '#DDBDF1'];
+    <!-- Librerías de Terceros -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
-    window.categoryChartInstance = new Chart(ctxCategory, {
-        type: 'doughnut',
-        data: {
-            labels: catLabels,
-            datasets: [{
-                data: catCounts,
-                backgroundColor: colors.slice(0, categories.length),
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } }
-            }
-        }
-    });
-};
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
 
-// Render Orders List
-const renderAdminOrders = () => {
-    const tbody = document.getElementById("admin-orders-table-body");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    if (orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--color-text-muted);">No hay pedidos registrados.</td></tr>`;
-        return;
-    }
-
-    const sortedOrders = [...orders].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    sortedOrders.forEach(o => {
-        const tr = document.createElement("tr");
-
-        let itemsDetailHTML = "<ul class='order-items-detail-list' style='margin:0; padding-left:16px;'>";
-        o.items.forEach(i => {
-            const weightText = i.weightLabel === "1kg" ? "1kg cerrado" : i.weightLabel;
-            itemsDetailHTML += `<li>${i.name} (${weightText}) x${i.quantity}</li>`;
-        });
-        itemsDetailHTML += "</ul>";
-
-        let badgeClass = "badge-status-pendiente";
-        if (o.status === "Confirmado") badgeClass = "badge-status-confirmado";
-        else if (o.status === "Entregado") badgeClass = "badge-status-entregado";
-        else if (o.status === "Cancelado") badgeClass = "badge-status-cancelado";
-
-        tr.innerHTML = `
-            <td><strong>#${o.id}</strong></td>
-            <td>${new Date(o.createdAt).toLocaleDateString('es-AR')}<br><small style="color:var(--color-text-muted);">${new Date(o.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} hs</small></td>
-            <td>
-                <strong>${o.customer.name}</strong><br>
-                <small>${o.customer.phone}</small><br>
-                <small style="color:var(--color-text-muted);">${o.customer.address}</small>
-            </td>
-            <td>${itemsDetailHTML}</td>
-            <td style="font-weight:700;">${formatCurrency(o.total)}</td>
-            <td><span class="badge-status ${badgeClass}">${o.status}</span></td>
-            <td>
-                <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding: 6px; font-size: 12px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: white; cursor: pointer;">
-                    <option value="Pendiente" ${o.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                    <option value="Confirmado" ${o.status === 'Confirmado' ? 'selected' : ''}>Confirmado</option>
-                    <option value="Entregado" ${o.status === 'Entregado' ? 'selected' : ''}>Entregado</option>
-                    <option value="Cancelado" ${o.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
-                </select>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-};
-
-// Update Order Status (Sync with Finance incomes)
-window.updateOrderStatus = (orderId, newStatus) => {
-    const index = orders.findIndex(o => o.id === orderId);
-    if (index > -1) {
-        const oldStatus = orders[index].status;
-        orders[index].status = newStatus;
-        saveOrders();
-        renderAdminOrders();
-        renderAdminDashboard();
-
-        // Save order revenue to financial book when status turns confirmed or delivered
-        if ((newStatus === "Confirmado" || newStatus === "Entregado") && (oldStatus !== "Confirmado" && oldStatus !== "Entregado")) {
-            const existingFin = finances.find(f => f.concept === `Venta Pedido ${orderId}`);
-            if (!existingFin) {
-                const newFin = {
-                    id: "fin-" + Math.floor(1000 + Math.random() * 9000),
-                    type: "income",
-                    concept: `Venta Pedido ${orderId}`,
-                    category: "Ventas",
-                    amount: orders[index].total,
-                    date: new Date().toISOString()
-                };
-                finances.push(newFin);
-                saveFinances();
-                renderAdminFinances();
-            }
-        }
-        
-        // Remove from log if cancelled
-        if (newStatus === "Cancelado") {
-            finances = finances.filter(f => f.concept !== `Venta Pedido ${orderId}`);
-            saveFinances();
-            renderAdminFinances();
-        }
-        updateExportPreview();
-    }
-};
-
-// Render Finances ledger
-const renderAdminFinances = () => {
-    const tbody = document.getElementById("admin-finances-table-body");
-    const incomesText = document.getElementById("admin-finance-incomes");
-    const expensesText = document.getElementById("admin-finance-expenses");
-    const balanceText = document.getElementById("admin-finance-balance");
-    const balanceCard = document.getElementById("admin-finance-balance-card");
-
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    const incomes = finances.filter(f => f.type === 'income').reduce((sum, f) => sum + f.amount, 0);
-    const expenses = finances.filter(f => f.type === 'expense').reduce((sum, f) => sum + f.amount, 0);
-    const balance = incomes - expenses;
-
-    incomesText.innerText = formatCurrency(incomes);
-    expensesText.innerText = formatCurrency(expenses);
-    balanceText.innerText = formatCurrency(balance);
-    
-    if (balance >= 0) {
-        balanceCard.style.borderLeftColor = "#5A7863";
-    } else {
-        balanceCard.style.borderLeftColor = "var(--color-danger)";
-    }
-
-    if (finances.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--color-text-muted);">Sin movimientos contables registrados.</td></tr>`;
-        return;
-    }
-
-    const sortedFin = [...finances].sort((a,b) => new Date(b.date) - new Date(a.date));
-
-    sortedFin.forEach(f => {
-        const tr = document.createElement("tr");
-        tr.style.borderLeft = `3px solid ${f.type === 'income' ? '#5A7863' : 'var(--color-danger)'}`;
-        
-        tr.innerHTML = `
-            <td>${new Date(f.date).toLocaleDateString('es-AR')}</td>
-            <td style="font-weight:700; text-transform:uppercase; color:${f.type === 'income' ? '#5A7863' : 'var(--color-danger)'};">
-                ${f.type === 'income' ? 'Ingreso' : 'Egreso'}
-            </td>
-            <td><strong>${f.concept}</strong></td>
-            <td><span style="background:var(--bg-main); padding:4px 8px; border-radius:var(--border-radius-sm); font-size:11px; font-weight:700;">${f.category}</span></td>
-            <td style="font-weight:700; color:${f.type === 'income' ? '#5A7863' : 'var(--color-danger)'};">
-                ${f.type === 'income' ? '+' : '-'}${formatCurrency(f.amount)}
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-};
-
-// Excel Export logic (SheetJS)
-const exportToExcel = () => {
-    if (typeof XLSX === 'undefined') {
-        alert('Librería de exportación XLSX no cargada. Por favor, reintente.');
-        return;
-    }
-
-    const wb = XLSX.utils.book_new();
-
-    const incSales = document.getElementById("ex-sales").checked;
-    const incStock = document.getElementById("ex-stock").checked;
-    const incFinances = document.getElementById("ex-finances").checked;
-
-    if (!incSales && !incStock && !incFinances) {
-        alert("Selecciona al menos una planilla para exportar.");
-        return;
-    }
-
-    // 1. Orders sheet
-    if (incSales) {
-        const salesData = orders.map(o => ({
-            'ID Pedido': o.id,
-            'Fecha': new Date(o.createdAt).toLocaleDateString('es-AR'),
-            'Cliente': o.customer.name,
-            'Teléfono': o.customer.phone,
-            'Dirección Envío': o.customer.address,
-            'Productos': o.items.map(i => `${i.name} (${i.weightLabel}) x${i.quantity}`).join('; '),
-            'Subtotal ($)': o.subtotal,
-            'Envío ($)': o.shipping,
-            'Total ($)': o.total,
-            'Estado': o.status
-        }));
-        const wsSales = XLSX.utils.json_to_sheet(salesData);
-        wsSales['!cols'] = [
-            { wch: 12 }, { wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 30 },
-            { wch: 45 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 15 }
-        ];
-        XLSX.utils.book_append_sheet(wb, wsSales, 'Ventas - Pedidos');
-    }
-
-    // 2. Catalog sheet
-    if (incStock) {
-        const stockData = products.map(p => ({
-            'ID Producto': p.id,
-            'Nombre del Producto': p.name,
-            'Categoría': formatCategoryName(p.category),
-            'Modalidad de Venta': p.mode === 'weight' ? 'Por Peso Variable' : 'Por Kilo Cerrado',
-            'Precio por Kg ($)': p.pricePerKg
-        }));
-        const wsStock = XLSX.utils.json_to_sheet(stockData);
-        wsStock['!cols'] = [
-            { wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 18 }
-        ];
-        XLSX.utils.book_append_sheet(wb, wsStock, 'Inventario - Productos');
-    }
-
-    // 3. Cash finances sheet
-    if (incFinances) {
-        const finData = finances.map(f => ({
-            'Fecha': new Date(f.date).toLocaleDateString('es-AR'),
-            'Tipo de Movimiento': f.type === 'income' ? 'INGRESO' : 'EGRESO',
-            'Concepto / Detalle': f.concept,
-            'Categoría Contable': f.category,
-            'Monto ($)': f.amount
-        }));
-        
-        const totalIncomes = finances.filter(f => f.type === 'income').reduce((sum, f) => sum + f.amount, 0);
-        const totalExpenses = finances.filter(f => f.type === 'expense').reduce((sum, f) => sum + f.amount, 0);
-        finData.push({ 'Fecha': '', 'Tipo de Movimiento': '', 'Concepto / Detalle': '', 'Categoría Contable': 'TOTAL INGRESOS', 'Monto ($)': totalIncomes });
-        finData.push({ 'Fecha': '', 'Tipo de Movimiento': '', 'Concepto / Detalle': '', 'Categoría Contable': 'TOTAL EGRESOS', 'Monto ($)': totalExpenses });
-        finData.push({ 'Fecha': '', 'Tipo de Movimiento': '', 'Concepto / Detalle': '', 'Categoría Contable': 'BALANCE NETO', 'Monto ($)': totalIncomes - totalExpenses });
-
-        const wsFin = XLSX.utils.json_to_sheet(finData);
-        wsFin['!cols'] = [
-            { wch: 12 }, { wch: 18 }, { wch: 30 }, { wch: 22 }, { wch: 15 }
-        ];
-        XLSX.utils.book_append_sheet(wb, wsFin, 'Caja - Contabilidad');
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const filename = `ElAlmacenDeGuada_Reporte_${today}.xlsx`;
-    XLSX.writeFile(wb, filename);
-};
-
-const updateExportPreview = () => {
-    document.getElementById("preview-sales-count").innerText = `${orders.length} filas`;
-    document.getElementById("preview-stock-count").innerText = `${products.length} filas`;
-    document.getElementById("preview-finances-count").innerText = `${finances.length} filas`;
-};
+    <!-- Admin Script -->
+    <script src="admin.js"></script>
+</body>
+</html>
