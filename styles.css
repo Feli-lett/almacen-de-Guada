@@ -1822,20 +1822,32 @@ button {
     .main-nav {
         grid-area: nav;
         width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         padding-bottom: 4px;
         margin: 0;
     }
-    
+
+    /* En mobile el usuario desliza con el dedo directamente sobre las
+       categorías, así que las flechas y el recorte del track de escritorio
+       ya no hacen falta (y eran los que ocultaban categorías). */
+    .nav-scroll-btn {
+        display: none;
+    }
+
+    .nav-scroll-track {
+        overflow: visible;
+        width: 100%;
+    }
+
     .nav-links {
-        width: max-content; /* Ensure nav is wider than viewport to enable scroll */
         display: flex;
         gap: 8px;
         background-color: var(--bg-main);
         padding: 6px;
         border-radius: var(--border-radius-lg);
         white-space: nowrap; /* Prevent buttons from wrapping to next line */
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        scroll-behavior: smooth;
     }
     
     .nav-link {
